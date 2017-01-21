@@ -1,10 +1,60 @@
+import random
+import string
+
+# This is a global variable that keeps track of the turn number.
+turn_number = 0
+# This is a global variable that keeps track of the tiles left.
+tiles_left = 100
+# This is a global list variable for the current Dictionary object.
+curr_dicts = []
+
+
+class ScrabbleGame:
+    # To start everything, we basically make an instance of ScrabbleGame in __main__() and go from there.
+    """
+    A game of Scrabble.
+    @type p1: Player
+        The user-player of this game.
+    @type p2: AI
+        The computer-player of this game.
+    @type dic: Dictionaries
+        The set of dictionaries this game will refer to.
+    """
+
+    def __init__(self):
+        """
+        Starting a new game.
+        @type self: ScrabbleGame
+        @rtype: None
+        """
+        name = input("Please enter your name: ")
+        self.dic = Dictionaries()
+        global curr_dicts
+        curr_dicts.append(self.dic.letters_points)
+        curr_dicts.append(self.dic.letters_amounts)
+        self.p1 = Player(name)
+        self.p2 = AI()
+        self.game()
+
+    def game(self):
+        """
+        The game's entirety, I think.
+        @type self: ScrabbleGame
+        @rtype: str
+        """
+        print("Yay")
+        global tiles_left
+        while tiles_left != 0 and self.p1.hand != [] and self.p2.hand != []: # and p1 can make a move and p2 can make a move
+            turn_start(self.p1, self.p2)
+        curr_dicts = []
+        return winner(self.p1, self.p2)
+
+
 class Player:
     """
     A user-controlled player in a scrabble game.
     @type name: str
         This is the name of the player.
-    @type isturn: bool
-        If it is the player's turn or not.
     @type hand: list[Tile]
         The player's hand of tiles, each tile is a tile object.
     @type points: int
@@ -20,8 +70,7 @@ class Player:
         """
         # This may be changed to a python input though
         self.name = username
-        self.isturn = True
-        self.hand = gen_start_hand(True)
+        self.hand = self.generate_tiles(7)
         self.points = 0
 
     def player_move(self):
@@ -30,7 +79,57 @@ class Player:
         @type self: Player
         @rtype: None
         """
-        pass
+        point_gain = 0  # We'll need to change this to the actual point gain later
+        global turn_number
+        turn_number += 1
+        global tiles_left
+        tiles_left -= (7 - len(self.hand))
+        self.update_points(point_gain)
+        self.hand = self.generate_tiles(7 - len(self.hand), self.hand)
+
+    def generate_tiles(self, num_tiles, curr_hand=[]):
+        """
+        Generates a random starting hand for an entity.
+        Effectively, this takes your still-existing hand of tiles (by default it's empty), and adds
+        tiles from the back of a finite tile list for as many tiles are missing.
+
+        @type num_tiles: int
+            This is the number of tiles that needs to be refilled for that entity's hand.
+        @type curr_hand: list[Tile]
+            This is the leftover tiles from the entity's hand.
+        @rtype: list[Tile]
+        """
+        new_hand = curr_hand
+        # If there aren't enough tiles to fill that person's hand, then give them as many as are leftover in the pile.
+        global tiles_left
+        if num_tiles > tiles_left:
+            num_tiles = tiles_left
+
+        for i in range(num_tiles):
+            # for this to work, we MUST create a Dictionaries object.
+            rand_letter = random.choice(string.ascii_lowercase)
+
+            # While the random letter chosen has no more available tiles, keep selecting another random letter
+            global curr_dicts
+            while curr_dicts[1][rand_letter] == 0:
+                rand_letter = random.choice(string.ascii_lowercase)
+
+            # Then, subtract 1 from that letter's amount, and create a new tile with it, which we'll eventually return
+            curr_dicts[1][rand_letter] -= 1
+            new_tile = Tile(rand_letter, curr_dicts[0][rand_letter])
+            new_hand.append(new_tile)
+            tiles_left -= 1
+
+        return new_hand
+
+    def update_points(self, points):
+        """
+        Adds points to an Player, at the end of their turn.
+        @type self: Player
+        @type points: int
+        @rtype: None
+        """
+        self.points += points
 
 
 class AI:
@@ -38,8 +137,6 @@ class AI:
     A computer-controlled opponent in a scrabble game.
     @type name: str
         This is the name of the AI, it's always the same (at least for now).
-    @type isturn: bool
-        If it is the AI's turn or not.
     @type hand: list[Tile]
         The AI's hand of tiles, each tile is a tile object.
     @type points: int
@@ -49,12 +146,11 @@ class AI:
     def __init__(self):
         """
         Initializes a new AI in a scrabble game.
-        @type self: Player
+        @type self: AI
         @rtype: None
         """
         self.name = "Your Worst Nightmare MUAHAHA"
-        self.isturn = False
-        self.hand = gen_start_hand(False)
+        self.hand = self.generate_tiles(7)
         self.points = 0
 
     def ai_move(self):
@@ -63,7 +159,57 @@ class AI:
         @type self: AI
         @rtype: None
         """
-        pass
+        point_gain = 0  # We'll need to change this as well to the actual point gain later
+        global turn_number
+        turn_number += 1
+        global tiles_left
+        tiles_left -= (7 - len(self.hand))
+        self.update_points(point_gain)
+        self.hand = self.generate_tiles(7 - len(self.hand), self.hand)
+
+    def generate_tiles(self, num_tiles, curr_hand=[]):
+        """
+        Generates a random starting hand for an entity.
+        Effectively, this takes your still-existing hand of tiles (by default it's empty), and adds
+        tiles from the back of a finite tile list for as many tiles are missing.
+
+        @type num_tiles: int
+            This is the number of tiles that needs to be refilled for that entity's hand.
+        @type curr_hand: list[Tile]
+            This is the leftover tiles from the entity's hand.
+        @rtype: list[Tile]
+        """
+        new_hand = curr_hand
+        # If there aren't enough tiles to fill that person's hand, then give them as many as are leftover in the pile.
+        global tiles_left
+        if num_tiles > tiles_left:
+            num_tiles = tiles_left
+
+        for i in range(num_tiles):
+            # for this to work, we MUST create a Dictionaries object.
+            rand_letter = random.choice(string.ascii_lowercase)
+
+            # While the random letter chosen has no more available tiles, keep selecting another random letter
+            global curr_dicts
+            while curr_dicts[1][rand_letter] == 0:
+                rand_letter = random.choice(string.ascii_lowercase)
+
+            # Then, subtract 1 from that letter's amount, and create a new tile with it, which we'll eventually return
+            curr_dicts[1][rand_letter] -= 1
+            new_tile = Tile(rand_letter, curr_dicts[0][rand_letter])
+            new_hand.append(new_tile)
+            tiles_left -= 1
+
+        return new_hand
+
+    def update_points(self, points):
+        """
+        Adds points to the AI, at the end of their turn.
+        @type self: AI
+        @type points: int
+        @rtype: None
+        """
+        self.points += points
 
 
 class Tile:
@@ -85,14 +231,93 @@ class Tile:
         self.value = points
 
 
+class Dictionaries:
+    """
+    The two major dictionaries we'll need for this game.
+    @type letters: list
+        A list that contains all the possible letters.
+    @type points: list
+        A list that contains all the possible points.
+    @type amounts: list
+        A list that contains all the possible quantities.
+    @type letters_points: dict[str:int]
+        A dictionary that contains all the points corresponding to the letters.
+    @type letters_amounts: dict[str:int]
+        A list that contains all the quantities corresponding to the letters.
+    """
 
-def gen_start_hand(isPlayer):
+    def __init__(self):
+        """
+        Initializes a new set of dictionaries.
+        @type self: dictionaries
+        @rtype: None
+        """
+        self.letters = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p",
+                        "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"]
+        self.points = [1, 3, 3, 2, 1, 4, 2, 4, 1, 8, 5, 1, 3, 1, 1, 3, 10, 1, 1, 1, 1, 4, 4, 8, 4, 10]
+        self.amounts = [9, 2, 2, 4, 12, 2, 3, 2, 9, 1, 1, 4, 2, 6, 8, 2, 1, 6, 4, 6, 4, 2, 2, 1, 2, 1]
+        self.letters_points = self.make_letter_points_dict()
+        self.letters_amounts = self.make_letter_amounts_dict()
+
+    def make_letter_points_dict(self):
+        """
+        Makes a dictionary containing the letters mapped to point values.
+        @type self: dictionaries
+        @rtype: dict[str:int]
+        """
+        letter_points_dict = {}
+        for i in range(len(self.letters)):
+            letter_points_dict[self.letters[i]] = self.points[i]
+        return letter_points_dict
+
+    def make_letter_amounts_dict(self):
+        """
+        Makes a dictionary containing the letters mapped to quantity values.
+        @type self: dictionaries
+        @rtype: dict[str:int]
+        """
+        letter_amounts_dict = {}
+        for i in range(len(self.letters)):
+            letter_amounts_dict[self.letters[i]] = self.amounts[i]
+        return letter_amounts_dict
+
+
+def turn_start(player, ai):
     """
-    Generates a random starting hand for an entity.
-    @type isPlayer: bool
-    @rtype: list[tile]
+    Determines whose turn it is currently, and then allows that entity to make a move.
+    @type player: Player
+    @type ai: AI
+    @rtype: None
     """
-    if isPlayer:
-        return []
+    global turn_number
+    if turn_number % 2 == 0:
+        player.player_move()
     else:
-        return []
+        ai.ai_move()
+
+
+def winner(player, ai):
+    """
+    Determines who is the winner at the end of the game, based purely on points.
+    @type player: Player
+    @type ai: AI
+    @rtype: str
+    """
+    if player.points > ai.points:
+        return player.name
+    else:
+        return ai.name
+
+
+def is_modified(points, modifier):
+    """
+    Determines the modification (multiplying) of a tile's value. (Currently does nothing!)
+    @type points: int
+    @type modifier: int
+    @rtype: int
+    """
+    return points*modifier
+
+
+if __name__ == '__main__':
+    newgame = ScrabbleGame()
