@@ -1,12 +1,14 @@
 import random
 import string
 
-# This is a global variable that keeps track of the turn number.
+# This is a global integer that keeps track of the turn number.
 turn_number = 0
-# This is a global variable that keeps track of the tiles left.
+# This is a global integer that keeps track of the tiles left.
 tiles_left = 100
 # This is a global list variable for the current Dictionary object.
 curr_dicts = []
+# This is a global integer for determining iff both sides cannot make more moves (passed).
+game_end = 0
 
 
 class ScrabbleGame:
@@ -28,11 +30,14 @@ class ScrabbleGame:
         @rtype: None
         """
         name = input("Please enter the player's name: ")
+        # Firstly initializes the dictionary, as p1 and p2 will need them.
         self.dic = Dictionaries()
         global curr_dicts
         curr_dicts.append(self.dic.letters_points)
         curr_dicts.append(self.dic.letters_amounts)
         curr_dicts.append(self.dic.word_list)
+
+        # Now initializes the Player, the AI, and the method simulating the start of the game.
         self.p1 = Player(name)
         self.p2 = AI()
         self.game()
@@ -47,21 +52,31 @@ class ScrabbleGame:
         global curr_dicts
         global turn_number
         global tiles_left
-        while tiles_left != 0 and self.p1.hand != [] and self.p2.hand != []: # and p1 can make a move and p2 can make a move
+
+        # Calls the turn_start method many many times, which facilitates the game's progression.
+        # The turns carry on indefinitely until one of the follow conditions is fulfilled:
+        # 1) Tiles_left hits 0   2)Both the Player and AI's hands become empty   3) Both player pass in a row
+        # 4) It exceeds 200 turns (more to prevent exceptions of infinite loops, as this normally wouldn't happen)
+        while tiles_left != 0 and (self.p1.hand != [] and self.p2.hand != []) and game_end <= 1 and turn_number < 200:
             self.turn_start()
             print("It is now turn #" + str(turn_number) + ".")
         curr_dicts = []
+        # Returns the winner after the game has technically ended.
         return self.winner()
 
     def turn_start(self):
         """
         Determines whose turn it is currently, and then allows that entity to make a move.
+        It will continue to do this until both sides pass, then it finishes.
         @rtype: None
         """
         global turn_number
+        # On even turns (including the first), the Player moves, and on odd turns the AI moves.
         if turn_number % 2 == 0:
+            print("Tis " + self.p1.name + "'s turn!")
             self.p1.player_move()
         else:
+            print("Tis " + self.p2.name + "'s turn!")
             self.p2.ai_move()
 
     def winner(self):
@@ -74,7 +89,7 @@ class ScrabbleGame:
         elif self.p2.points > self.p1.points:
             return self.p2.name + "wins!"
         else:
-            return "Oh noes, it's a tie!"
+            return "Aw...it's a tie..."
 
 
 class Player:
@@ -104,14 +119,19 @@ class Player:
         """
         When a player decides to play a tile (or word).
         @type self: Player
-        @rtype: None
+        @rtype: bool
         """
-        point_gain = 0  # We'll need to change this to the actual point gain later
         global turn_number
+        global game_end
         turn_number += 1
-        global tiles_left
+        # if ipass:             # This is the unimplimented if block for passing
+        #    game_end += 1
+        # else:
+        point_gain = 0  # We'll need to change this to the actual point gain later
         self.update_points(point_gain)
+        # This refills the Player's hand
         self.hand = self.generate_tiles(7 - len(self.hand), self.hand)
+        game_end = 0
 
     def generate_tiles(self, num_tiles, curr_hand=[]):
         """
@@ -183,14 +203,19 @@ class AI:
         """
         When the AI decides to play a tile (or word).
         @type self: AI
-        @rtype: None
+        @rtype: bool
         """
-        point_gain = 0  # We'll need to change this as well to the actual point gain later
         global turn_number
+        global game_end
         turn_number += 1
-        global tiles_left
+        # if youpass:             # This is the unimplimented if block for passing
+        #    game_end += 1
+        # else:
+        point_gain = 0  # We'll need to change this to the actual point gain later
         self.update_points(point_gain)
+        # This refills the AI's hand
         self.hand = self.generate_tiles(7 - len(self.hand), self.hand)
+        game_end = 0
 
     def generate_tiles(self, num_tiles, curr_hand=[]):
         """
