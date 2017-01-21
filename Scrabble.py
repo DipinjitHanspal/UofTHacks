@@ -24,6 +24,20 @@ class Player:
         self.hand = gen_start_hand(True)
         self.points = 0
 
+    def new_tiles(self, needed):
+        """
+        After the player moves, this method replenishes their hand to have maximum tiles again.
+        @type self: Player
+        @type needed: int
+            This is the number of tiles that will be replenished (how many the player is missing).
+        @rtype: list[Tile]
+        """
+        tiles_returned = []
+        for i in range(needed):
+            # Do something that generates a Tile called new_tile
+            tiles_returned.append(new_tile)
+        return tiles_returned
+
     def player_move(self):
         """
         When a player decides to play a tile (or word).
@@ -31,6 +45,15 @@ class Player:
         @rtype: None
         """
         pass
+
+    def update_points(self, points):
+        """
+        Adds points to an Player, at the end of their turn.
+        @type self: Player
+        @type points: int
+        @rtype: None
+        """
+        self.points += points
 
 
 class AI:
@@ -57,6 +80,20 @@ class AI:
         self.hand = gen_start_hand(False)
         self.points = 0
 
+    def new_tiles(self, needed):
+        """
+        After the AI moves, this method replenishes their hand to have maximum tiles again.
+        @type self: AI
+        @type needed: int
+            This is the number of tiles that will be replenished (how many the AI is missing).
+        @rtype: list[Tile]
+        """
+        tiles_returned = []
+        for i in range(needed):
+            # Do something that generates a Tile called new_tile
+            tiles_returned.append(new_tile)
+        return tiles_returned
+
     def ai_move(self):
         """
         When the AI decides to play a tile (or word).
@@ -64,6 +101,15 @@ class AI:
         @rtype: None
         """
         pass
+
+    def update_points(self, points):
+        """
+        Adds points to the AI, at the end of their turn.
+        @type self: AI
+        @type points: int
+        @rtype: None
+        """
+        self.points += points
 
 
 class Tile:
@@ -73,6 +119,7 @@ class Tile:
         The letter that is on the tile.
     @type value: int
         The amount of points the tile is worth.
+
     """
 
     def __init__(self, letter, points):
@@ -85,14 +132,23 @@ class Tile:
         self.value = points
 
 
-
-def gen_start_hand(isPlayer):
+def gen_start_hand(isplayer):
     """
     Generates a random starting hand for an entity.
-    @type isPlayer: bool
+    @type isplayer: bool
     @rtype: list[tile]
     """
-    if isPlayer:
+    if isplayer:
         return []
     else:
         return []
+
+
+def is_modified(points, modifier):
+    """
+    Determines the modification (multiplying) of a tile's value.
+    @type points: int
+    @type modifier: int
+    @rtype: int
+    """
+    return points*modifier
