@@ -3,6 +3,43 @@ import string
 
 # This is a global variable that keeps track of the turn number.
 turn_number = 0
+# This is a global variable that keeps track of the tiles left.
+tiles_left = 100
+
+
+class ScrabbleGame:
+    # To start everything, we basically make an instance of ScrabbleGame in __main__() and go from there.
+    """
+    A game of Scrabble.
+    @type p1: Player
+        The user-player of this game.
+    @type p2: AI
+        The computer-player of this game.
+    @type dic: Dictionaries
+        The set of dictionaries this game will refer to.
+    """
+
+    def __init__(self):
+        """
+        Starting a new game.
+        @type self: ScrabbleGame
+        @rtype: None
+        """
+        self.dic = Dictionaries()
+        self.p1 = Player(name)
+        self.p2 = AI()
+        self.game()
+
+    def game(self):
+        """
+        The game's entirety, I think.
+        @type self: ScrabbleGame
+        @rtype: str
+        """
+        global tiles_left
+        while tiles_left != 0:
+            turn_start(self.p1, self.p2)
+        return winner(self.p1, self.p2)
 
 
 class Player:
@@ -34,8 +71,12 @@ class Player:
         @type self: Player
         @rtype: None
         """
+        point_gain = 0  # We'll need to change this to the actual point gain later
         global turn_number
         turn_number += 1
+        global tiles_left
+        tiles_left -= (7 - len(self.hand))
+        self.update_points(point_gain)
         self.hand = generate_tiles(7 - len(self.hand), self.hand)
 
     def update_points(self, points):
@@ -75,8 +116,12 @@ class AI:
         @type self: AI
         @rtype: None
         """
+        point_gain = 0  # We'll need to change this as well to the actual point gain later
         global turn_number
         turn_number += 1
+        global tiles_left
+        tiles_left -= (7 - len(self.hand))
+        self.update_points(point_gain)
         self.hand = generate_tiles(7 - len(self.hand), self.hand)
 
     def update_points(self, points):
@@ -112,10 +157,15 @@ class Dictionaries:
     """
     The two major dictionaries we'll need for this game.
     @type letters: list
+        A list that contains all the possible letters.
     @type points: list
+        A list that contains all the possible points.
     @type amounts: list
+        A list that contains all the possible quantities.
     @type letters_points: dict[str:int]
+        A dictionary that contains all the points corresponding to the letters.
     @type letters_amounts: dict[str:int]
+        A list that contains all the quantities corresponding to the letters.
     """
 
     def __init__(self):
@@ -134,6 +184,8 @@ class Dictionaries:
     def make_letter_points_dict(self):
         """
         Makes a dictionary containing the letters mapped to point values.
+        @type self: dictionaries
+        @rtype: dict[str:int]
         """
         letter_points_dict = {}
         for i in range(len(self.letters)):
@@ -143,6 +195,8 @@ class Dictionaries:
     def make_letter_amounts_dict(self):
         """
         Makes a dictionary containing the letters mapped to quantity values.
+        @type self: dictionaries
+        @rtype: dict[str:int]
         """
         letter_amounts_dict = {}
         for i in range(len(self.letters)):
@@ -163,30 +217,25 @@ def generate_tiles(num_tiles, curr_hand=[]):
     @rtype: list[Tile]
     """
     new_hand = curr_hand
+    # If there aren't enough tiles to fill that person's hand, then give them as many as are leftover in the pile.
+    global tiles_left
+    if num_tiles > tiles_left:
+        num_tiles = tiles_left
+
     for i in range(num_tiles):
         # for this to work, we MUST create a Dictionaries object called "dic"...
         rand_letter = random.choice(string.ascii_lowercase)
 
         # While the random letter chosen has no more available tiles, keep selecting another random letter
-        while dic.letters_amounts[rand_letter] == 0:
+        while newgame.dic.letters_amounts[rand_letter] == 0:
             rand_letter = random.choice(string.ascii_lowercase)
 
         # Then, subtract 1 from that letter's amount, and create a new tile with it, which we'll eventually return
-        dic.letters_amounts[rand_letter] -= 1
-        new_tile = Tile(rand_letter, dic.letters_points[rand_letter])
+        newgame.dic.letters_amounts[rand_letter] -= 1
+        new_tile = Tile(rand_letter, newgame.dic.letters_points[rand_letter])
         new_hand.append(new_tile)
 
     return new_hand
-
-
-def is_modified(points, modifier):
-    """
-    Determines the modification (multiplying) of a tile's value.
-    @type points: int
-    @type modifier: int
-    @rtype: int
-    """
-    return points*modifier
 
 
 def turn_start(player, ai):
@@ -215,8 +264,16 @@ def winner(player, ai):
     else:
         return ai.name
 
+
+def is_modified(points, modifier):
+    """
+    Determines the modification (multiplying) of a tile's value. (Currently does nothing!)
+    @type points: int
+    @type modifier: int
+    @rtype: int
+    """
+    return points*modifier
+
+
 if __name__ == '__main__':
-    # dic = Dictionaries()
-    # print(dic.letters_amounts)
-    # print(dic.letters_points)
-    # print(random.choice(string.ascii_lowercase))
+    newgame = ScrabbleGame()
