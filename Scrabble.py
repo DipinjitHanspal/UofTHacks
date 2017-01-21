@@ -1,3 +1,9 @@
+import random
+
+# This is a global variable that keeps track of the turn number.
+turn_number = 0
+
+
 class Player:
     """
     A user-controlled player in a scrabble game.
@@ -21,22 +27,8 @@ class Player:
         # This may be changed to a python input though
         self.name = username
         self.isturn = True
-        self.hand = gen_start_hand(True)
+        self.hand = generate_tiles(7)
         self.points = 0
-
-    def new_tiles(self, needed):
-        """
-        After the player moves, this method replenishes their hand to have maximum tiles again.
-        @type self: Player
-        @type needed: int
-            This is the number of tiles that will be replenished (how many the player is missing).
-        @rtype: list[Tile]
-        """
-        tiles_returned = []
-        for i in range(needed):
-            # Do something that generates a Tile called new_tile
-            tiles_returned.append(new_tile)
-        return tiles_returned
 
     def player_move(self):
         """
@@ -44,7 +36,9 @@ class Player:
         @type self: Player
         @rtype: None
         """
-        pass
+        global turn_number
+        turn_number += 1
+        self.hand = generate_tiles(7 - len(self.hand), self.hand)
 
     def update_points(self, points):
         """
@@ -72,27 +66,13 @@ class AI:
     def __init__(self):
         """
         Initializes a new AI in a scrabble game.
-        @type self: Player
+        @type self: AI
         @rtype: None
         """
         self.name = "Your Worst Nightmare MUAHAHA"
         self.isturn = False
-        self.hand = gen_start_hand(False)
+        self.hand = generate_tiles(7)
         self.points = 0
-
-    def new_tiles(self, needed):
-        """
-        After the AI moves, this method replenishes their hand to have maximum tiles again.
-        @type self: AI
-        @type needed: int
-            This is the number of tiles that will be replenished (how many the AI is missing).
-        @rtype: list[Tile]
-        """
-        tiles_returned = []
-        for i in range(needed):
-            # Do something that generates a Tile called new_tile
-            tiles_returned.append(new_tile)
-        return tiles_returned
 
     def ai_move(self):
         """
@@ -100,7 +80,9 @@ class AI:
         @type self: AI
         @rtype: None
         """
-        pass
+        global turn_number
+        turn_number += 1
+        self.hand = generate_tiles(7 - len(self.hand), self.hand)
 
     def update_points(self, points):
         """
@@ -119,7 +101,6 @@ class Tile:
         The letter that is on the tile.
     @type value: int
         The amount of points the tile is worth.
-
     """
 
     def __init__(self, letter, points):
@@ -132,16 +113,20 @@ class Tile:
         self.value = points
 
 
-def gen_start_hand(isplayer):
+def generate_tiles(num_tiles, curr_hand=[]):
     """
     Generates a random starting hand for an entity.
-    @type isplayer: bool
+    @type num_tiles: int
+        This is the number of tiles that needs to be refilled for that entity's hand.
+    @type curr_hand: list[Tile]
+        This is the leftover tiles from the entity's hand.
     @rtype: list[tile]
     """
-    if isplayer:
-        return []
-    else:
-        return []
+    new_hand = curr_hand
+    for i in range(num_tiles):
+        # if we're having a pre-generate finite set of tiles
+        new_hand.append([finite_tile_list].pop())
+    return new_hand
 
 
 def is_modified(points, modifier):
@@ -152,3 +137,30 @@ def is_modified(points, modifier):
     @rtype: int
     """
     return points*modifier
+
+
+def turn_start(player, ai):
+    """
+    Determines whose turn it is currently, and then allows that entity to make a move.
+    @type player: Player
+    @type ai: AI
+    @rtype: None
+    """
+    global turn_number
+    if turn_number % 2 == 0:
+        player.player_move()
+    else:
+        ai.ai_move()
+
+
+def winner(player, ai):
+    """
+    Determines who is the winner at the end of the game.
+    @type player: Player
+    @type ai: AI
+    @rtype: str
+    """
+    if player.points > ai.points:
+        return player.name
+    else:
+        return ai.name
