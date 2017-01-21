@@ -37,7 +37,7 @@ class ScrabbleGame:
         @rtype: str
         """
         global tiles_left
-        while tiles_left != 0 and self.p1.hand != [] and self.p2.hand != []: # and p1 can't make a move and p2 can't make a move
+        while tiles_left != 0 and self.p1.hand != [] and self.p2.hand != []: # and p1 can make a move and p2 can make a move
             turn_start(self.p1, self.p2)
         return winner(self.p1, self.p2)
 
