@@ -1,4 +1,5 @@
 import random
+import string
 
 # This is a global variable that keeps track of the turn number.
 turn_number = 0
@@ -163,8 +164,18 @@ def generate_tiles(num_tiles, curr_hand=[]):
     """
     new_hand = curr_hand
     for i in range(num_tiles):
-        # if we're having a pre-generate finite set of tiles
-        new_hand.append()
+        # for this to work, we MUST create a Dictionaries object called "dic"...
+        rand_letter = random.choice(string.ascii_lowercase)
+
+        # While the random letter chosen has no more available tiles, keep selecting another random letter
+        while dic.letters_amounts[rand_letter] == 0:
+            rand_letter = random.choice(string.ascii_lowercase)
+
+        # Then, subtract 1 from that letter's amount, and create a new tile with it, which we'll eventually return
+        dic.letters_amounts[rand_letter] -= 1
+        new_tile = Tile(rand_letter, dic.letters_points[rand_letter])
+        new_hand.append(new_tile)
+
     return new_hand
 
 
@@ -205,4 +216,7 @@ def winner(player, ai):
         return ai.name
 
 if __name__ == '__main__':
-    pass
+    # dic = Dictionaries()
+    # print(dic.letters_amounts)
+    # print(dic.letters_points)
+    # print(random.choice(string.ascii_lowercase))
