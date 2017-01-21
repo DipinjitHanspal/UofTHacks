@@ -9,8 +9,6 @@ class Player:
     A user-controlled player in a scrabble game.
     @type name: str
         This is the name of the player.
-    @type isturn: bool
-        If it is the player's turn or not.
     @type hand: list[Tile]
         The player's hand of tiles, each tile is a tile object.
     @type points: int
@@ -26,7 +24,6 @@ class Player:
         """
         # This may be changed to a python input though
         self.name = username
-        self.isturn = True
         self.hand = generate_tiles(7)
         self.points = 0
 
@@ -55,8 +52,6 @@ class AI:
     A computer-controlled opponent in a scrabble game.
     @type name: str
         This is the name of the AI, it's always the same (at least for now).
-    @type isturn: bool
-        If it is the AI's turn or not.
     @type hand: list[Tile]
         The AI's hand of tiles, each tile is a tile object.
     @type points: int
@@ -70,7 +65,6 @@ class AI:
         @rtype: None
         """
         self.name = "Your Worst Nightmare MUAHAHA"
-        self.isturn = False
         self.hand = generate_tiles(7)
         self.points = 0
 
@@ -113,19 +107,64 @@ class Tile:
         self.value = points
 
 
+class Dictionaries:
+    """
+    The two major dictionaries we'll need for this game.
+    @type letters: list
+    @type points: list
+    @type amounts: list
+    @type letters_points: dict[str:int]
+    @type letters_amounts: dict[str:int]
+    """
+
+    def __init__(self):
+        """
+        Initializes a new set of dictionaries.
+        @type self: dictionaries
+        @rtype: None
+        """
+        self.letters = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p",
+                        "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"]
+        self.points = [1, 3, 3, 2, 1, 4, 2, 4, 1, 8, 5, 1, 3, 1, 1, 3, 10, 1, 1, 1, 1, 4, 4, 8, 4, 10]
+        self.amounts = [9, 2, 2, 4, 12, 2, 3, 2, 9, 1, 1, 4, 2, 6, 8, 2, 1, 6, 4, 6, 4, 2, 2, 1, 2, 1]
+        self.letters_points = self.make_letter_points_dict()
+        self.letters_amounts = self.make_letter_amounts_dict()
+
+    def make_letter_points_dict(self):
+        """
+        Makes a dictionary containing the letters mapped to point values.
+        """
+        letter_points_dict = {}
+        for i in range(len(self.letters)):
+            letter_points_dict[self.letters[i]] = self.points[i]
+        return letter_points_dict
+
+    def make_letter_amounts_dict(self):
+        """
+        Makes a dictionary containing the letters mapped to quantity values.
+        """
+        letter_amounts_dict = {}
+        for i in range(len(self.letters)):
+            letter_amounts_dict[self.letters[i]] = self.amounts[i]
+        return letter_amounts_dict
+
+
 def generate_tiles(num_tiles, curr_hand=[]):
     """
     Generates a random starting hand for an entity.
+    Effectively, this takes your still-existing hand of tiles (by default it's empty), and adds
+    tiles from the back of a finite tile list for as many tiles are missing.
+
     @type num_tiles: int
         This is the number of tiles that needs to be refilled for that entity's hand.
     @type curr_hand: list[Tile]
         This is the leftover tiles from the entity's hand.
-    @rtype: list[tile]
+    @rtype: list[Tile]
     """
     new_hand = curr_hand
     for i in range(num_tiles):
         # if we're having a pre-generate finite set of tiles
-        new_hand.append([finite_tile_list].pop())
+        new_hand.append()
     return new_hand
 
 
@@ -164,3 +203,6 @@ def winner(player, ai):
         return player.name
     else:
         return ai.name
+
+if __name__ == '__main__':
+    pass
